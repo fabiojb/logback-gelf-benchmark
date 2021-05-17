@@ -31,9 +31,9 @@
 
 package de.siegmar.logbackgelf;
 
+import de.siegmar.logbackgelf.json.*;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.profile.GCProfiler;
-import org.openjdk.jmh.profile.StackProfiler;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -41,6 +41,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.sql.Time;
 import java.util.concurrent.TimeUnit;
 
 @State(Scope.Benchmark)
@@ -49,6 +50,8 @@ import java.util.concurrent.TimeUnit;
 public class Benchmak {
 
     SimpleJsonEncoder encoder;
+    Integer logLevel = 1;
+    String timestampString = "1621086230"; // use a fixed string to disregard TimestampValue in this test
 
     @Setup(Level.Trial)
     public void setup() {
@@ -61,32 +64,32 @@ public class Benchmak {
 
     @Benchmark
     public void testEncode() throws IOException {
-        encoder.appendToJSON("version", "1.1")
-                .appendToJSON("host", "localhost")
-                .appendToJSON("short_message", "this is a short message")
-                .appendToJSON("full_message", "sKih7t7UbgCFpEGZ2Khwk5avF RnYoeFxPFuxspx0zE8EkDw8PpD9VsHKqUjHAwD")
-                .appendToJSONUnquoted("timestamp", "1620179468")
-                .appendToJSONUnquoted("level", 1);
+        encoder.appendToJSON(new Key("version"), new QuotedValue("1.1"))
+                .appendToJSON(new Key("host"), new EscapedValue("localhost"))
+                .appendToJSON(new Key("short_message"), new EscapedValue("this is a short message"))
+                .appendToJSON(new Key("full_message"), new EscapedValue("sKih7t7UbgCFpEGZ2Khwk5avF RnYoeFxPFuxspx0zE8EkDw8PpD9VsHKqUjHAwD"))
+                .appendToJSON(new Key("timestamp"), new UnquotedValue(timestampString))
+                .appendToJSON(new Key("level"), new UnquotedValue(logLevel));
     }
 
     @Benchmark
     public void testEncodeEscapeOne() throws IOException {
-        encoder.appendToJSON("version", "1.1")
-                .appendToJSON("host", "localhost")
-                .appendToJSON("short_message", "this is a short message")
-                .appendToJSON("full_message", "sKih7t7UbgCFpEGZ2Khwk5avF\n RnYoeFxPFuxspx0zE8EkDw8PpD9VsHKqUjHAwD")
-                .appendToJSONUnquoted("timestamp", "1620179468")
-                .appendToJSONUnquoted("level", 1);
+        encoder.appendToJSON(new Key("version"), new QuotedValue("1.1"))
+                .appendToJSON(new Key("host"), new EscapedValue("localhost"))
+                .appendToJSON(new Key("short_message"), new EscapedValue("this is a short message"))
+                .appendToJSON(new Key("full_message"), new EscapedValue("sKih7t7UbgCFpEGZ2Khwk5avF\n RnYoeFxPFuxspx0zE8EkDw8PpD9VsHKqUjHAwD"))
+                .appendToJSON(new Key("timestamp"), new UnquotedValue(timestampString))
+                .appendToJSON(new Key("level"), new UnquotedValue(logLevel));
     }
 
     @Benchmark
     public void testEncodeEscapeMany() throws IOException {
-        encoder.appendToJSON("version", "1.1")
-                .appendToJSON("host", "localhost")
-                .appendToJSON("short_message", "this is a short message")
-                .appendToJSON("full_message", "{\"glossary\":{\"title\":\"example glossary\",\"GlossDiv\":{\"title\":\"S\",\"GlossList\":{\"GlossEntry\":{\"ID\":\"SGML\",\"SortAs\":\"SGML\",\"GlossTerm\":\"Standard Generalized Markup Language\",\"Acronym\":\"SGML\",\"Abbrev\":\"ISO 8879:1986\",\"GlossDef\":{\"para\":\"A meta-markup language, used to create markup languages such as DocBook.\",\"GlossSeeAlso\":[\"GML\",\"XML\"]},\"GlossSee\":\"markup\"}}}}}\n")
-                .appendToJSONUnquoted("timestamp", "1620179468")
-                .appendToJSONUnquoted("level", 1);
+        encoder.appendToJSON(new Key("version"), new QuotedValue("1.1"))
+                .appendToJSON(new Key("host"), new EscapedValue("localhost"))
+                .appendToJSON(new Key("short_message"), new EscapedValue("this is a short message"))
+                .appendToJSON(new Key("full_message"), new EscapedValue("{\"glossary\":{\"title\":\"example glossary\",\"GlossDiv\":{\"title\":\"S\",\"GlossList\":{\"GlossEntry\":{\"ID\":\"SGML\",\"SortAs\":\"SGML\",\"GlossTerm\":\"Standard Generalized Markup Language\",\"Acronym\":\"SGML\",\"Abbrev\":\"ISO 8879:1986\",\"GlossDef\":{\"para\":\"A meta-markup language, used to create markup languages such as DocBook.\",\"GlossSeeAlso\":[\"GML\",\"XML\"]},\"GlossSee\":\"markup\"}}}}}\n"))
+                .appendToJSON(new Key("timestamp"), new UnquotedValue(timestampString))
+                .appendToJSON(new Key("level"), new UnquotedValue(logLevel));
     }
 
     public static void main(String[] args) throws RunnerException {
